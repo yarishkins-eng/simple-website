@@ -19,10 +19,26 @@
             text-align: center;
         }
         img {
-            max-width: 90%;
-            max-height: 90vh;
+            max-width: 95%;
+            max-height: 85vh;
+            width: auto;
+            height: auto;
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            object-fit: contain;
+        }
+        
+        /* Улучшения для мобильных */
+        @media (max-width: 768px) {
+            img {
+                max-width: 98%;
+                max-height: 80vh;
+                border-radius: 8px;
+                box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            }
+            .container {
+                padding: 10px;
+            }
         }
         .loading {
             color: #666;

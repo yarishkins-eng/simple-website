@@ -33,6 +33,78 @@
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             object-fit: contain;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        img:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+        }
+        
+        /* Модальное окно для PDF */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1001;
+            transition: color 0.3s;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        
+        .close-btn:hover {
+            color: #f44336;
+            background: rgba(0,0,0,0.7);
+        }
+        
+        .pdf-container {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+        }
+        
+        .pdf-container iframe,
+        .pdf-container object,
+        .pdf-container embed {
+            width: 100%;
+            height: 100%;
+            border: none;
         }
         
         /* Улучшения для мобильных */
@@ -46,20 +118,55 @@
             .container {
                 padding: 10px;
             }
+            
+            .close-btn {
+                font-size: 35px;
+                width: 45px;
+                height: 45px;
+                top: 10px;
+                right: 15px;
+            }
+            
+            .pdf-container {
+                padding: 0;
+            }
         }
+        
         .loading {
             color: #666;
             font-size: 1.2em;
             margin-top: 20px;
         }
+        
+        /* Подсказка для пользователя */
+        .click-hint {
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 15px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="Buklet_Murava_40x21.pdf" target="_blank">
-            <img src="photo.jpg" alt="Моя фотография" onload="hideLoading()" onerror="showError()" style="cursor: pointer;">
-        </a>
+        <img src="photo.jpg" alt="Моя фотография" onclick="openPDF()" onload="hideLoading()" onerror="showError()">
         <div id="loading" class="loading">Загрузка изображения...</div>
+        <div class="click-hint">👆 Нажмите на изображение, чтобы открыть буклет</div>
+    </div>
+
+    <!-- Модальное окно для PDF -->
+    <div id="pdfModal" class="modal" onclick="closeModalOnBackground(event)">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closePDF()">&times;</span>
+            <div class="pdf-container">
+                <iframe id="pdfFrame" src="" type="application/pdf"></iframe>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -70,6 +177,48 @@
         function showError() {
             document.getElementById('loading').innerHTML = 'Изображение не найдено. Добавьте файл photo.jpg в папку.';
         }
+        
+        function openPDF() {
+            const modal = document.getElementById('pdfModal');
+            const pdfFrame = document.getElementById('pdfFrame');
+            
+            // Устанавливаем источник PDF
+            pdfFrame.src = 'Buklet_Murava_40x21.pdf';
+            
+            // Показываем модальное окно
+            modal.style.display = 'block';
+            
+            // Блокируем прокрутку страницы
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closePDF() {
+            const modal = document.getElementById('pdfModal');
+            const pdfFrame = document.getElementById('pdfFrame');
+            
+            // Скрываем модальное окно
+            modal.style.display = 'none';
+            
+            // Очищаем источник (необязательно, но помогает освободить ресурсы)
+            pdfFrame.src = '';
+            
+            // Возвращаем прокрутку страницы
+            document.body.style.overflow = 'auto';
+        }
+        
+        function closeModalOnBackground(event) {
+            // Закрываем модальное окно при клике на фон
+            if (event.target.id === 'pdfModal') {
+                closePDF();
+            }
+        }
+        
+        // Закрытие по клавише Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closePDF();
+            }
+        });
         
         // Скрыть загрузку через 5 секунд в любом случае
         setTimeout(hideLoading, 5000);

@@ -170,6 +170,9 @@
     </div>
 
     <script>
+        // Флаг для отслеживания состояния модального окна
+        let isModalOpen = false;
+        
         function hideLoading() {
             document.getElementById('loading').style.display = 'none';
         }
@@ -190,20 +193,37 @@
             
             // Блокируем прокрутку страницы
             document.body.style.overflow = 'hidden';
+            
+            // Добавляем запись в историю браузера
+            isModalOpen = true;
+            history.pushState({modalOpen: true}, '', '');
         }
         
-        function closePDF() {
+        function closePDF(skipHistoryBack = false) {
             const modal = document.getElementById('pdfModal');
             const pdfFrame = document.getElementById('pdfFrame');
+            
+            // Проверяем, открыто ли модальное окно
+            if (modal.style.display === 'none') {
+                return; // Окно уже закрыто, ничего не делаем
+            }
             
             // Скрываем модальное окно
             modal.style.display = 'none';
             
-            // Очищаем источник (необязательно, но помогает освободить ресурсы)
+            // Очищаем источник
             pdfFrame.src = '';
             
             // Возвращаем прокрутку страницы
             document.body.style.overflow = 'auto';
+            
+            // Возвращаемся назад в истории, если закрытие через крестик
+            if (isModalOpen && !skipHistoryBack) {
+                isModalOpen = false;
+                history.back();
+            } else {
+                isModalOpen = false;
+            }
         }
         
         function closeModalOnBackground(event) {
@@ -212,6 +232,14 @@
                 closePDF();
             }
         }
+        
+        // Обработка кнопки "назад" браузера
+        window.addEventListener('popstate', function(event) {
+            if (isModalOpen) {
+                // Закрываем модальное окно без возврата назад (так как уже идет возврат)
+                closePDF(true);
+            }
+        });
         
         // Закрытие по клавише Escape
         document.addEventListener('keydown', function(event) {
